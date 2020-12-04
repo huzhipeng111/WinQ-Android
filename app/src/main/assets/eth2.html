@@ -476,6 +476,23 @@
 
         dsBridge.registerAsyn("ethSmartContract", {
             tag: "ethSmartContract",
+            eth1: function (privateKey, responseCallback) {
+                var web3 = new Web3('https://' + netType + '.infura.io/v3/dc2243ed5aa5488d9fcf794149f56fc2');
+
+                async function writeBlock() {
+                    console.log(privateKey);
+                    var block = await web3.eth.getBlock('latest');
+                    console.log(block.number);
+                    console.log(block.timestamp);
+                    console.log(block.gasLimit);
+                    console.log(block.hash);
+                    console.log(block.parentHash);
+                    responseCallback(block)
+                }
+
+                writeBlock();
+            },
+
             mint: function (webUrl, privateKey, data, fromAddress, contractAddress, gasPrice, gasLimit, amount, neoHash, responseCallback) {
                 console.log("xxxxxx");
                 var web3 = new Web3(webUrl);
@@ -504,13 +521,13 @@
                             if(!err) {
                                 web3.eth.sendSignedTransaction(signed.rawTransaction, function (error, hash) {
                                     if (!error) {
-                                        responseCallback([0, hash]);
+                                        responseCallback(hash);
                                     } else {
-                                        responseCallback([1, err]);
+                                        responseCallback(err);
                                     }
                                 });
                             } else {
-                                responseCallback([1, err]);
+                                responseCallback(err);
                             }
 
                         });
@@ -518,13 +535,116 @@
                 });
             },
 
-            burn: function (webUrl, privateKey, fromAddress, contractAddress, gasPrice, gasLimit, amount, neoHash, responseCallback) {
-                console.log("xxxxxx");
+
+            eth2: function (privateKey, responseCallback) {
+                var web3 = new Web3('https://' + netType + '.infura.io/v3/dc2243ed5aa5488d9fcf794149f56fc2');
+                const contractAddress = '0xc0a47dFe034B400B47bDaD5FecDa2621de6c4d95';
+                const contract = new web3.eth.Contract(abi, contractAddress);
+                try {
+                    contract.methods.getExchange("0x4ddc2d193948926d02f9b1fe9e1daa0718270ed5").call(function (err, res) {
+                        console.log(err);
+                        console.log(res);
+                        responseCallback(res)
+                    });
+                } catch (err) {
+                    console.log(err)
+                }
+            },
+            lockedBalanceOf: function (address, privateKey, contractAddress, responseCallback) {
+                var web3 = new Web3('https://' + netType + '.infura.io/v3/dc2243ed5aa5488d9fcf794149f56fc2');
+                const contract = new web3.eth.Contract(abi, contractAddress);
+                try {
+                    contract.methods.lockedBalanceOf(address).call(function (err, res) {
+                        if (err != null) {
+                            console.log(err);
+                        } else {
+                            console.log(res);
+                            responseCallback(res)
+                        }
+                    });
+                } catch (err) {
+                    console.log(err)
+                }
+            },
+            ethTransaction: function (privateKey, fromAddress, toAddress, contractAddress, responseCallback) {
+                var web3 = new Web3('https://' + netType + '.infura.io/v3/dc2243ed5aa5488d9fcf794149f56fc2');
+
+                web3.eth.getTransactionCount(fromAddress, function (error, number) {
+                    const txObject = {
+                        nonce:      web3.utils.toHex(number),
+                        to:         toAddress,
+                        from:       fromAddress,
+                        value:      web3.utils.toHex(web3.utils.toWei('0.5', 'ether')),
+                        gasLimit:   web3.utils.toHex(60000),
+                        gasPrice:   web3.utils.toHex(web3.utils.toWei('60', 'gwei'))
+                    };
+
+                    web3.eth.accounts.signTransaction(txObject, privateKey, function (err, signed) {
+                        console.log(JSON.stringify(signed));
+                        console.log(signed.rawTransaction);
+                        const receipt = web3.eth.sendSignedTransaction(signed.rawTransaction, function (error, hash) {
+                            if (!error) {
+                                console.log(hash)
+                            } else {
+                                console.log(error)
+                            }
+                        });
+
+                    });
+                });
+            },
+            //qlc的decimals是8，所以写死的乘10000000
+            erc20Transaction: function (privateKey, fromAddress, toAddress, contractAddress, amount, responseCallback) {
+                var web3 = new Web3('https://' + netType + '.infura.io/v3/dc2243ed5aa5488d9fcf794149f56fc2');
+                console.log("xxxxxxxxxxxx");
+                const contract = new web3.eth.Contract(abi, contractAddress);
+                try {
+                    contract.methods.balanceOf(fromAddress).call(function (err, res) {
+                        if (!err) {
+                            console.log(res);
+                            web3.eth.getTransactionCount(fromAddress, function (error, number) {
+                                console.log(number)
+                                // data的组成，由：0x + 要调用的合约方法的function signature + 要传递的方法参数，每个参数都为64位(对transfer来说，第一个是接收人的地址去掉0x，第二个是代币数量的16进制表示，去掉前面0x，然后补齐为64位)
+                                // var data = '0x' + 'a9059cbb' + addPreZero(toAddress.toLowerCase().substring(2)) + addPreZero(web3.utils.toHex(10 * 100000000).substr(2));
+                                var data = contract.methods.transfer(toAddress, web3.utils.toHex(amount * 100000000)).encodeABI();
+                                console.log(data);
+                                const txObject = {
+                                    nonce: web3.utils.toHex(number),
+                                    to: contractAddress,
+                                    value: web3.utils.toHex(web3.utils.toWei('0', 'ether')),
+                                    gasLimit: web3.utils.toHex(60000),
+                                    gasPrice: web3.utils.toHex(web3.utils.toWei('60', 'gwei')),
+                                    data: data
+                                };
+                                web3.eth.accounts.signTransaction(txObject, privateKey, function (err, signed) {
+                                    console.log(JSON.stringify(signed));
+                                    console.log(signed.rawTransaction);
+                                    web3.eth.sendSignedTransaction(signed.rawTransaction, function (error, hash) {
+                                        if (!error) {
+                                            console.log(hash);
+                                            responseCallback(hash)
+                                        } else {
+                                            console.log(error)
+                                        }
+                                    });
+
+                                });
+                            });
+                        } else {
+                            console.log(err)
+                        }
+                    });
+                } catch (err) {
+                    console.log(err)
+                }
+
+            },
+            destoryLock: function (webUrl, privateKey, fromAddress, toAddress, contractAddress, amount, hash, gasPrice, gasLimit, responseCallback) {
                 var web3 = new Web3(webUrl);
 
 
                 const contract = new web3.eth.Contract(abi, contractAddress);
-                const myData = contract.methods.burn(neoHash, web3.utils.toHex(amount * 100000000)).encodeABI();
+                const myData = contract.methods.destoryLock(hash, web3.utils.toHex(amount * 100000000), toAddress).encodeABI();
 
                 web3.eth.getTransactionCount(fromAddress, function (error, number) {
                     if (error) {
@@ -546,15 +666,13 @@
                             if(!err) {
                                 web3.eth.sendSignedTransaction(signed.rawTransaction, function (error, hash) {
                                     if (!error) {
-                                        responseCallback([0, hash]);
+                                        responseCallback(['1',hash]);
                                     } else {
-                                        console.log(err);
-                                        responseCallback([1, err]);
+                                        responseCallback(['-1',err]);
                                     }
                                 });
                             } else {
-                                console.log(err);
-                                responseCallback([1, err]);
+                                responseCallback(['-1',err]);
                             }
 
                         });
@@ -562,6 +680,105 @@
                 });
             },
 
+            // destoryFetch 超时赎回qlc
+            destoryFetch: function (webUrl,privateKey,fromAddress,rHash, contractAddr, gasPrice, gasLimit, responseCallback) {
+                var web3 = new Web3(webUrl);
+                const contractAddress = contractAddr;
+                const contract = new web3.eth.Contract(abi, contractAddress);
+
+                // 合约方法data
+                const myData = contract.methods.destoryFetch(rHash).encodeABI();
+                web3.eth.getTransactionCount(fromAddress, function (error, number) {
+                    // 获取资产数量失败
+                    if(error) {
+                        responseCallback(['-1',err]);
+                    } else { // 成功
+                        const transTx = {
+                            nonce: web3.utils.toHex(number),//随机数
+                            to: contractAddress,//接受方地址或者合约地址
+                            //gasPrice和gasLimit如果不知道怎么填，可以参考etherscan上的任意一笔交易的值
+                            value: web3.utils.toHex(web3.utils.toWei('0', 'ether')),
+                            gasLimit: web3.utils.toHex(gasLimit),
+                            gasPrice: web3.utils.toHex(web3.utils.toWei(gasPrice, 'gwei')),
+                            data: myData
+                        };
+                        web3.eth.accounts.signTransaction(transTx, privateKey, function(err, signed){
+                            if(!error) {
+                                web3.eth.sendSignedTransaction(signed.rawTransaction, function (error, hash) {
+                                    if (!error) {
+                                        responseCallback(['1',hash]);
+                                    } else {
+                                        responseCallback(['-1',err]);
+                                    }
+                                });
+                            } else {
+                                responseCallback(['-1',err]);
+                            }
+
+                        });
+                    }
+
+                });
+            },
+            //nep5 -> erc20 claim qlc
+            issueUnlock: function (webUrl,privateKey,fromAddress, rHash, orginHash, contractAddr, gasPrice, gasLimit, responseCallback) {
+                var web3 = new Web3(webUrl);
+                const contractAddress = contractAddr;
+                const contract = new web3.eth.Contract(abi, contractAddress);
+
+                // 合约方法data
+                const myData = contract.methods.issueUnlock(rHash, orginHash).encodeABI();
+                web3.eth.getTransactionCount(fromAddress, function (error, number) {
+                    // 获取资产数量失败
+                    if(error) {
+                        responseCallback(['-1',err]);
+                    } else { // 成功
+                        const transTx = {
+                            nonce: web3.utils.toHex(number),//随机数
+                            //gasPrice和gasLimit如果不知道怎么填，可以参考etherscan上的任意一笔交易的值
+                            gasPrice: web3.utils.toHex(web3.utils.toWei(gasPrice, 'gwei')),
+                            gasLimit: web3.utils.toHex(gasLimit),
+                            to: contractAddress,//接受方地址或者合约地址
+                            value: web3.utils.toHex(web3.utils.toWei('0', 'ether')),
+                            data: myData
+                        };
+                        web3.eth.accounts.signTransaction(transTx, privateKey, function(err, signed){
+                            if(!error) {
+                                web3.eth.sendSignedTransaction(signed.rawTransaction, function (error, hash) {
+                                    if (!error) {
+                                        responseCallback(['1',hash]);
+                                    } else {
+                                        responseCallback(['-1',err]);
+                                    }
+                                });
+                            } else {
+                                responseCallback(['-1',err]);
+                            }
+
+                        });
+                    }
+
+                });
+            },
+
+
+            getErc20TokenBalance1: function (privateKey, fromAddress, responseCallback) {
+                var web3 = new Web3('https://' + netType + '.infura.io/v3/dc2243ed5aa5488d9fcf794149f56fc2');
+                const contractAddress = '0xF738c236Beea30E83F1D626508b89fA423B98f0e';
+                const contract = new web3.eth.Contract(abi, contractAddress);
+                try {
+                    contract.methods.issueLock("0x0A8EFAacbeC7763855b9A39845DDbd03b03775C1").call(function (err, res) {
+                        if (!err) {
+                            console.log(res);
+                            responseCallback(res)
+                        } else {
+                            console.log(err)
+                        }
+                    });
+                } catch (err) {
+                    console.log(err)
+                }
+            },
             getErc20TokenBalance: function (privateKey, fromAddress, contractAddress, responseCallback) {
                 var web3 = new Web3('https://' + netType + '.infura.io/v3/dc2243ed5aa5488d9fcf794149f56fc2');
                 const contract = new web3.eth.Contract(abi, contractAddress);
@@ -578,7 +795,6 @@
                     console.log(err)
                 }
             }
-
         });
     </script>
 </head>

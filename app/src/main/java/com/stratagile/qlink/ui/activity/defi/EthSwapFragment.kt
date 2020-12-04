@@ -162,7 +162,7 @@ class EthSwapFragment : BaseFragment(), EthSwapContract.View {
         swapRecord.isMainNet = SpUtil.getBoolean(activity, ConstantValue.isMainNet, true)
         swapRecord.type = SwapRecord.SwapType.typeErc20ToNep5.ordinal
         swapRecord.fromAddress = ethWallet.address
-        miniSwapQlc.text = getString(R.string.the_minimum_stake_amount_is_1_s_qlc, leastSwapQlc.toString())
+        miniSwapQlc.text = getString(R.string.the_minimum_stake_amount_is_1_s_qlc, "1")
         etStakeQlcAmount.hint = ""
         invoke.setOnClickListener {
             if (!this::wrapperOnline.isInitialized) {
@@ -170,14 +170,10 @@ class EthSwapFragment : BaseFragment(), EthSwapContract.View {
                 toast(getString(R.string.pleasewait))
                 return@setOnClickListener
             }
-            if (wrapperOnline.isWithdrawLimit) {
-                toast(getString(R.string.is_withdraw_limit))
-                return@setOnClickListener
-            }
-            if (wrapperOnline.ethBalance < 0.01) {
-                toast(getString(R.string.is_withdraw_limit))
-                return@setOnClickListener
-            }
+//            if (wrapperOnline.ethBalance < 0.01) {
+//                toast(getString(R.string.is_withdraw_limit))
+//                return@setOnClickListener
+//            }
             if ("".equals(balance)) {
                 getErc20TokenBalance()
                 toast(getString(R.string.pleasewait))
@@ -187,8 +183,8 @@ class EthSwapFragment : BaseFragment(), EthSwapContract.View {
                 toast("No enough QLC to swap")
                 return@setOnClickListener
             }
-            if (etStakeQlcAmount.text.toString().toFloat() < wrapperOnline.minWithdrawAmount.toLong()/ 100000000) {
-                toast(getString(R.string.the_minimum_stake_amount_is_1_s_qlc, (wrapperOnline.minWithdrawAmount.toLong()/ 100000000).toString()))
+            if (etStakeQlcAmount.text.toString().toFloat() < 1) {
+                toast(getString(R.string.the_minimum_stake_amount_is_1_s_qlc, (1).toString()))
                 return@setOnClickListener
             }
             if (ethPrice == 0.toDouble()) {
@@ -207,12 +203,7 @@ class EthSwapFragment : BaseFragment(), EthSwapContract.View {
                 toast(getString(R.string.pleasewait))
                 return@setOnClickListener
             }
-            if (!"".equals(etStakeQlcAmount.text.toString()) && this::neoWallet.isInitialized) {
-                if (etStakeQlcAmount.text.toString().toInt() < 5) {
-                    return@setOnClickListener
-                }
-                showEthFee()
-            }
+            showEthFee()
         }
 
         llSelectETHWallet.setOnClickListener {
@@ -275,14 +266,9 @@ class EthSwapFragment : BaseFragment(), EthSwapContract.View {
         if (isClose) {
             return
         }
-        val dataJson = jsonObject(
-                "type" to swapRecord.type.toString(),
-                "hash" to swapRecord.rHash
-        )
 
-        var list = arrayListOf<Pair<String, String>>(Pair("value", swapRecord.rHash))
-        KLog.i(dataJson.toString())
-        var request = (ConstantValue.qlcHubEndPoint + "/info/lockerInfo").httpGet(list)
+        var list = arrayListOf<Pair<String, String>>(Pair("hash", swapRecord.txHash))
+        var request = (ConstantValue.qlcHubEndPoint + "/info/swapInfoByTxHash").httpGet(list)
         DefiUtil.addRequestHeader(request)
         request.responseString { _, _, result ->
             val (data, error) = result
@@ -304,16 +290,7 @@ class EthSwapFragment : BaseFragment(), EthSwapContract.View {
                 Invalid
                  */
                 var checkHubState = Gson().fromJson<CheckHubState>(data, CheckHubState::class.java)
-                if (checkHubState.state.toInt() == SwapRecord.SwapState.WithDrawInit.ordinal) {
-                    //WithDrawEthLockedDone == 10
-                    swapRecord.state = checkHubState.state.toInt()
-                    AppConfig.instance.daoSession.swapRecordDao.update(swapRecord)
-                    runOnUiThread {
-                        tvDot!!.text = "1"
-                    }
-                    Thread.sleep(checkStatusTime)
-                    checkLcokState()
-                } else if (checkHubState.state.toInt() == SwapRecord.SwapState.WithDrawEthLockedDone.ordinal) {
+                if (checkHubState.state.toInt() == 2) {
                     //WithDrawEthLockedDone == 10
                     swapRecord.state = checkHubState.state.toInt()
                     AppConfig.instance.daoSession.swapRecordDao.update(swapRecord)
@@ -322,48 +299,11 @@ class EthSwapFragment : BaseFragment(), EthSwapContract.View {
                     }
                     Thread.sleep(checkStatusTime)
                     checkLcokState()
-                } else if (checkHubState.state.toInt() == SwapRecord.SwapState.WithDrawNeoLockedPending.ordinal) {
-                    //WithDrawNeoLockedPending == 11
-                    swapRecord.state = checkHubState.state.toInt()
-                    AppConfig.instance.daoSession.swapRecordDao.update(swapRecord)
-                    runOnUiThread {
-                        tvDot!!.text = "3"
-                    }
-                    Thread.sleep(checkStatusTime)
-                    checkLcokState()
-                } else if (checkHubState.state.toInt() == SwapRecord.SwapState.WithDrawNeoLockedDone.ordinal) {
-                    //WithDrawNeoLockedDone == 12
-                    swapRecord.state = checkHubState.state.toInt()
-                    AppConfig.instance.daoSession.swapRecordDao.update(swapRecord)
-                    runOnUiThread {
-                        tvDot!!.text = "4"
-                    }
-                    if (swapRecord.swaptxHash == null || "".equals(swapRecord.swaptxHash)) {
-                        Thread.sleep(checkStatusTime)
-                        userUnlocNep5Qlc()
-                    } else {
-                        Thread.sleep(checkStatusTime)
-                        checkLcokState()
-                    }
-                } else if (checkHubState.state.toInt() == SwapRecord.SwapState.WithDrawNeoUnLockedPending.ordinal) {
-                    //WithDrawNeoLockedDone == 12
-                    swapRecord.state = checkHubState.state.toInt()
-                    AppConfig.instance.daoSession.swapRecordDao.update(swapRecord)
-                    runOnUiThread {
-                        tvDot!!.text = "5"
-                    }
-                    if (swapRecord.swaptxHash == null || "".equals(swapRecord.swaptxHash)) {
-                        Thread.sleep(checkStatusTime)
-                        userUnlocNep5Qlc()
-                    } else {
-                        Thread.sleep(checkStatusTime)
-                        checkLcokState()
-                    }
-                } else if (checkHubState.state.toInt() == SwapRecord.SwapState.WithDrawNeoUnLockedDone.ordinal) {
-                    //claim成功
-                    //WithDrawNeoUnLockedDone == 13
+                } else if (checkHubState.state.toInt() == 3) {
                     runOnUiThread {
                         swapRecord.state = checkHubState.state.toInt()
+                        swapRecord.swaptxHash = checkHubState.neoTxHash
+                        AppConfig.instance.daoSession.swapRecordDao.update(swapRecord)
                         startActivity(Intent(activity, SwapDetailActivity::class.java).putExtra("swapRecord", swapRecord))
                         var newSwapRecord = SwapRecord()
                         newSwapRecord.isMainNet = SpUtil.getBoolean(activity, ConstantValue.isMainNet, true)
@@ -378,28 +318,6 @@ class EthSwapFragment : BaseFragment(), EthSwapContract.View {
                         toast(getString(R.string.success))
                         activity!!.finish()
                     }
-
-                } else if (checkHubState.state.toInt() == SwapRecord.SwapState.WithDrawEthUnlockPending.ordinal) {
-                    //WithDrawEthUnlockPending == 14
-                    //可以作为app端的最终状态
-                    runOnUiThread {
-                        swapRecord.state = checkHubState.state.toInt()
-                        startActivity(Intent(activity, SwapDetailActivity::class.java).putExtra("swapRecord", swapRecord))
-                        var newSwapRecord = SwapRecord()
-                        newSwapRecord.isMainNet = SpUtil.getBoolean(activity, ConstantValue.isMainNet, true)
-                        newSwapRecord.wrpperEthAddress = wrapperOnline.ethAddress
-                        newSwapRecord.ethContractAddress = wrapperOnline.ethContract
-                        newSwapRecord.wrapperNeoAddress = wrapperOnline.neoAddress
-                        newSwapRecord.neoContractAddress = wrapperOnline.neoContract
-                        newSwapRecord.type = SwapRecord.SwapType.typeNep5ToErc20.ordinal
-                        newSwapRecord.fromAddress = swapRecord.fromAddress
-                        swapRecord = newSwapRecord
-                        sweetAlertDialogSwap!!.dismissWithAnimation()
-                        toast(getString(R.string.success))
-                        activity!!.finish()
-                    }
-                } else if (checkHubState.state.toInt() == SwapRecord.SwapState.WithDrawEthUnlockDone.ordinal) {
-                    //DepositNeoUnLockedPending == 5
                 }
             } else {
                 error.exception.printStackTrace()
@@ -490,30 +408,7 @@ class EthSwapFragment : BaseFragment(), EthSwapContract.View {
         if (isClose) {
             return
         }
-
-        val orginHash = UUID.randomUUID().toString().replace("-", "")
-        KLog.i(orginHash)
-        val hashSha256 = Sha256.from(orginHash.toByteArray()).toString()
-        KLog.i(hashSha256)
-
-        val dataJson = jsonObject(
-                "value" to hashSha256
-        )
-//        var list = arrayListOf<Pair<String, String>>(Pair("value", rHash))
-//        KLog.i(list)
-        var request = (ConstantValue.qlcHubEndPoint + "/withdraw/lock").httpPost().body(dataJson.toString())
-        DefiUtil.addRequestHeader(request)
-        var result1 = false
-        request.responseString { _, _, result ->
-            val (data, error) = result
-            KLog.i(data)
-            if (error == null) {
-                Thread.sleep(checkStatusTime)
-                destroyLock(gasPrice, gasLimit, orginHash, hashSha256)
-            } else {
-
-            }
-        }
+        burn(gasPrice, gasLimit)
     }
 
     /**
@@ -659,8 +554,8 @@ class EthSwapFragment : BaseFragment(), EthSwapContract.View {
                     swapRecord.wrapperNeoAddress = wrapperOnline.neoAddress
                     swapRecord.neoContractAddress = wrapperOnline.neoContract
                     runOnUiThread {
-                        etStakeQlcAmount.hint = getString(R.string.from_1_s_qlc, (wrapperOnline.minWithdrawAmount.toLong() / 100000000).toString())
-                        miniSwapQlc.text = getString(R.string.the_minimum_stake_amount_is_1_s_qlc, (wrapperOnline.minWithdrawAmount.toLong() / 100000000).toString())
+                        etStakeQlcAmount.hint = getString(R.string.from_1_s_qlc, "1")
+                        miniSwapQlc.text = getString(R.string.the_minimum_stake_amount_is_1_s_qlc, "1")
                     }
                     try {
                         getErc20TokenBalance()
@@ -783,41 +678,44 @@ class EthSwapFragment : BaseFragment(), EthSwapContract.View {
         return ETHWalletUtils.derivePrivateKey(ethWallet.id!!)
     }
 
-    fun destroyLock(gasPrice: String, gasLimit: Int, orginHash : String, hashSha256 : String) {
-        swapRecord.rOrign = orginHash
-        swapRecord.rHash = hashSha256
-        swapRecord.lockTime = System.currentTimeMillis()
+    fun burn(gasPrice: String, gasLimit: Int) {
         swapRecord.amount = etStakeQlcAmount.text.toString().toInt()
-        val arrays = arrayOfNulls<Any>(9)
+        val arrays = arrayOfNulls<Any>(8)
         arrays[0] = ConstantValue.ethNodeUrl
         arrays[1] = derivePrivateKey(swapRecord.fromAddress)
         arrays[2] = swapRecord.fromAddress
-        arrays[3] = wrapperOnline.ethAddress
-        arrays[5] = etStakeQlcAmount.text.toString().toInt()
-        arrays[4] = swapRecord.ethContractAddress
-        arrays[6] = "0x" + swapRecord.rHash
-        arrays[7] = gasPrice
-        arrays[8] = gasLimit
+        arrays[3] = wrapperOnline.ethContract
+        arrays[4] = gasPrice
+        arrays[5] = gasLimit
+        arrays[6] = etStakeQlcAmount.text.toString().toInt()
+        arrays[7] = swapRecord.toAddress
 
         arrays.forEach {
             KLog.i(it)
         }
         thread {
-            webview.callHandler<Any>("ethSmartContract.destoryLock", arrays, object : OnReturnValue<Any> {
+            webview.callHandler<Any>("ethSmartContract.burn", arrays, object : OnReturnValue<Any> {
                 override fun onValue(retValue: Any) {
                     this.onValue(retValue as JSONArray)
-                    swapRecord.txHash = retValue[1].toString()
-                    swapRecord.state = -1
-                    AppConfig.instance.daoSession.swapRecordDao.insert(swapRecord)
-                    checkErc20Transaction()
+                    if (retValue[0] == 0) {
+                        swapRecord.txHash = retValue[1].toString()
+                        swapRecord.state = 2
+                        swapRecord.lockTime = System.currentTimeMillis()
+                        AppConfig.instance.daoSession.swapRecordDao.insert(swapRecord)
+                        checkErc20Transaction()
+                    } else {
+                        runOnUiThread {
+                            toast(getString(R.string.re_try))
+                        }
+                    }
                 }
 
                 fun onValue(retValue: JSONArray) {
                     val result = StringBuilder().append("call succeed,return value is ")
                     KLog.i(result.append(retValue).toString())
-                    if (!"".equals(retValue)) {
-
-                    }
+//                    if (!"".equals(retValue)) {
+//
+//                    }
                 }
 
             })

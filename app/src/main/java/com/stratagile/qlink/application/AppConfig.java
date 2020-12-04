@@ -119,7 +119,7 @@ public class AppConfig extends MultiDexApplication {
     private DaoMaster mDaoMaster;
     private DaoSession mDaoSession;
     public TradePair.PairsListBean pair;
-    public boolean isMainNet = true;
+    public boolean isMainNet = false;
 
     private PackageInfo info;
     public Application deviceStorage;

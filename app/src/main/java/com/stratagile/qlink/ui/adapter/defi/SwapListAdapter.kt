@@ -45,90 +45,19 @@ class SwapListAdapter(array: ArrayList<SwapRecord>) : BaseQuickAdapter<SwapRecor
                     helper.setVisible(R.id.tvOperator, true)
                     helper.setText(R.id.tvOperator, mContext.getString(R.string.confirm))
                 }
-                SwapRecord.SwapState.DepositInit.ordinal -> {
-                    if (item.fail) {
-                        helper.setText(R.id.tvSwapState, mContext.getString(R.string.failed))
+                0 -> {
+                    if (item.swaptxHash == null || item.swaptxHash.equals("")) {
+                        helper.setVisible(R.id.tvOperator, true)
+                        helper.setText(R.id.tvSwapState, mContext.getString(R.string.waiting_for_confirm))
                     } else {
                         helper.setText(R.id.tvSwapState, mContext.getString(R.string.pending))
-                    }
-                }
-                SwapRecord.SwapState.DepositNeoLockedDone.ordinal -> {
-                    helper.setText(R.id.tvSwapState, mContext.getString(R.string.pending))
-                }
-                SwapRecord.SwapState.DepositEthLockedPending.ordinal -> {
-                    helper.setText(R.id.tvSwapState, mContext.getString(R.string.pending))
-                }
-                SwapRecord.SwapState.DepositEthLockedDone.ordinal -> {
-                    if (item.swaptxHash == null || "".equals(item.swaptxHash)) {
-                        helper.setText(R.id.tvSwapState, mContext.getString(R.string.waiting_for_claim))
-                        helper.setVisible(R.id.tvOperator, true)
-                        helper.setText(R.id.tvOperator, mContext.getString(R.string.claim_swap))
-                    } else {
-                        helper.setText(R.id.tvSwapState, mContext.getString(R.string.claiming))
                     }
                 }
 
-                SwapRecord.SwapState.DepositEthUnLockedDone.ordinal -> {
-                    if (item.swaptxHash == null || "".equals(item.swaptxHash)) {
-                        helper.setText(R.id.tvSwapState, mContext.getString(R.string.waiting_for_claim))
-                        helper.setVisible(R.id.tvOperator, true)
-                        helper.setText(R.id.tvOperator, mContext.getString(R.string.claim_swap))
-                    } else {
-                        helper.setText(R.id.tvSwapState, mContext.getString(R.string.claiming))
-                    }
-                }
-                //5
-                5 -> {
-                    helper.setText(R.id.tvSwapState, mContext.getString(R.string.pending))
-                }
-                6 -> {
+                1 -> {
                     helper.setText(R.id.tvSwapState, mContext.getString(R.string.completed))
                 }
-                7 -> {
-                    if (item.neoTimeout && item.ethTimeout) {
-                        if (item.swaptxHash == null || "".equals(item.swaptxHash)) {
-                            helper.setVisible(R.id.tvOperator, true)
-                            helper.setText(R.id.tvSwapState, mContext.getString(R.string.expired))
-                            helper.setText(R.id.tvOperator, mContext.getString(R.string.revoke))
-                        } else {
-                            helper.setText(R.id.tvSwapState, mContext.getString(R.string.revoked))
-                        }
-                    } else {
-                        helper.setText(R.id.tvSwapState, mContext.getString(R.string.pending))
-                    }
-                }
-                8 -> {
-                    if (item.neoTimeout && item.ethTimeout) {
-                        if (item.swaptxHash == null || "".equals(item.swaptxHash)) {
-                            helper.setVisible(R.id.tvOperator, true)
-                            helper.setText(R.id.tvSwapState, mContext.getString(R.string.expired))
-                            helper.setText(R.id.tvOperator, mContext.getString(R.string.revoke))
-                        } else {
-//                            helper.setText(R.id.tvSwapState, mContext.getString(R.string.revoked))
-                            helper.setVisible(R.id.tvOperator, true)
-                            helper.setText(R.id.tvSwapState, mContext.getString(R.string.expired))
-                            helper.setText(R.id.tvOperator, mContext.getString(R.string.revoke))
-                        }
-                    } else {
-                        helper.setText(R.id.tvSwapState, mContext.getString(R.string.pending))
-                    }
-                }
-                9 -> {
-                    if (item.neoTimeout && item.ethTimeout) {
-                        if (item.swaptxHash == null || "".equals(item.swaptxHash)) {
-                            helper.setVisible(R.id.tvOperator, true)
-                            helper.setText(R.id.tvSwapState, mContext.getString(R.string.expired))
-                            helper.setText(R.id.tvOperator, mContext.getString(R.string.revoke))
-                        } else {
-                            helper.setText(R.id.tvSwapState, mContext.getString(R.string.revoked))
-                        }
-                    } else {
-                        helper.setText(R.id.tvSwapState, mContext.getString(R.string.pending))
-                    }
-                }
-                10 -> {
-                    helper.setText(R.id.tvSwapState, mContext.getString(R.string.revoked))
-                }
+
             }
         } else {
             /**
@@ -160,95 +89,15 @@ class SwapListAdapter(array: ArrayList<SwapRecord>) : BaseQuickAdapter<SwapRecor
                 -2 -> {
                     helper.setText(R.id.tvSwapState, mContext.getString(R.string.failed))
                 }
-                -1 -> {
-                    helper.setText(R.id.tvSwapState, mContext.getString(R.string.waiting_for_confirm))
-                }
-                //11
-                SwapRecord.SwapState.WithDrawInit.ordinal -> {
-                    helper.setText(R.id.tvSwapState, mContext.getString(R.string.pending))
-                }
-                SwapRecord.SwapState.WithDrawEthLockedDone.ordinal -> {
-                    helper.setText(R.id.tvSwapState, mContext.getString(R.string.pending))
-                }
-                //13
-                SwapRecord.SwapState.WithDrawNeoLockedPending.ordinal -> {
-                    helper.setVisible(R.id.tvOperator, true)
-                    helper.setText(R.id.tvSwapState, mContext.getString(R.string.waiting_for_claim))
-                    helper.setText(R.id.tvOperator, mContext.getString(R.string.claim_swap))
-                }
-                //14
-                SwapRecord.SwapState.WithDrawNeoLockedDone.ordinal -> {
-                    helper.setVisible(R.id.tvOperator, true)
-                    helper.setText(R.id.tvSwapState, mContext.getString(R.string.waiting_for_claim))
-                    helper.setText(R.id.tvOperator, mContext.getString(R.string.claim_swap))
-                }
-                //15
-                SwapRecord.SwapState.WithDrawNeoUnLockedPending.ordinal -> {
-                    helper.setText(R.id.tvSwapState, mContext.getString(R.string.completed))
-                }
-                //16
-                SwapRecord.SwapState.WithDrawNeoUnLockedDone.ordinal -> {
-                    helper.setText(R.id.tvSwapState, mContext.getString(R.string.completed))
-                }
-                //17
-                SwapRecord.SwapState.WithDrawEthUnlockPending.ordinal -> {
-                    helper.setText(R.id.tvSwapState, mContext.getString(R.string.completed))
-                }
-                //18
-                SwapRecord.SwapState.WithDrawEthUnlockDone.ordinal -> {
-                    helper.setText(R.id.tvSwapState, mContext.getString(R.string.completed))
-//                    if (item.ethTimeout) {
-//                        if (item.swaptxHash == null || "".equals(item.swaptxHash)) {
-//                            helper.setVisible(R.id.tvOperator, true)
-//                            helper.setText(R.id.tvSwapState, mContext.getString(R.string.expired))
-//                            helper.setText(R.id.tvOperator, mContext.getString(R.string.revoke))
-//                        } else {
-//                            helper.setText(R.id.tvSwapState, mContext.getString(R.string.revoking))
-//
-//                        }
-//                    } else {
-//                        helper.setText(R.id.tvSwapState, mContext.getString(R.string.pending))
-//                    }
-                }
-                //19
-                SwapRecord.SwapState.WithDrawNeoFetchPending.ordinal -> {
-                    helper.setText(R.id.tvSwapState, mContext.getString(R.string.pending))
-                }
-                //20
-                SwapRecord.SwapState.WithDrawNeoFetchDone.ordinal -> {
-                    if (item.ethTimeout && item.neoTimeout) {
-                        if (item.swaptxHash == null || "".equals(item.swaptxHash)) {
-                            helper.setVisible(R.id.tvOperator, true)
-                            helper.setText(R.id.tvSwapState, mContext.getString(R.string.expired))
-                            helper.setText(R.id.tvOperator, mContext.getString(R.string.revoke))
-                        } else {
-                            if (!item.swaptxHash.startsWith("0x")) {
-                                helper.setVisible(R.id.tvOperator, true)
-                                helper.setText(R.id.tvSwapState, mContext.getString(R.string.expired))
-                                helper.setText(R.id.tvOperator, mContext.getString(R.string.revoke))
-                            } else {
-                                helper.setText(R.id.tvSwapState, mContext.getString(R.string.revoking))
-                            }
 
-                        }
-                    } else {
-                        helper.setText(R.id.tvSwapState, mContext.getString(R.string.pending))
-                    }
+                2 -> {
+                    helper.setText(R.id.tvSwapState, mContext.getString(R.string.pending))
                 }
-                //21
-                SwapRecord.SwapState.WithDrawEthFetchDone.ordinal -> {
-                    if (item.ethTimeout && item.neoTimeout) {
-                        if (item.swaptxHash == null || "".equals(item.swaptxHash)) {
-                            helper.setVisible(R.id.tvOperator, true)
-                            helper.setText(R.id.tvSwapState, mContext.getString(R.string.expired))
-                            helper.setText(R.id.tvOperator, mContext.getString(R.string.revoke))
-                        } else {
-                            helper.setText(R.id.tvSwapState, mContext.getString(R.string.revoked))
-                        }
-                    } else {
-                        helper.setText(R.id.tvSwapState, mContext.getString(R.string.pending))
-                    }
+
+                3 -> {
+                    helper.setText(R.id.tvSwapState, mContext.getString(R.string.completed))
                 }
+
             }
         }
         helper.addOnClickListener(R.id.tvOperator)

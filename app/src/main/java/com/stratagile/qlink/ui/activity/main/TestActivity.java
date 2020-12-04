@@ -128,7 +128,7 @@ public class TestActivity extends BaseActivity implements TestContract.View {
         logging.setLevel(HttpLoggingInterceptor.Level.BODY);
         builder.addInterceptor(logging);
         neow = Neow3j.build(new HttpService(ConstantValue.neoNode, builder.build()));
-        webview.loadUrl("file:///android_asset/eth.html");
+        webview.loadUrl("file:///android_asset/eth2.html");
     }
 
     @Override

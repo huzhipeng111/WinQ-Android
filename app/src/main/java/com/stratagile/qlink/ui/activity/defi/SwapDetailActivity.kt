@@ -61,13 +61,6 @@ class SwapDetailActivity : BaseActivity(), SwapDetailContract.View {
             cm.primaryClip = mClipData
             ToastUtil.displayShortToast(getString(R.string.copy_success))
         }
-        tvHash.text = swapRecord.rHash
-        tvHash.setOnClickListener {
-            val cm = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-            val mClipData = ClipData.newPlainText("Label", tvHash.text.toString())
-            cm.primaryClip = mClipData
-            ToastUtil.displayShortToast(getString(R.string.copy_success))
-        }
 
         tvTime.text = TimeUtil.getOrderTime(swapRecord.lockTime)
         if (swapRecord.type == 1) {
@@ -100,124 +93,17 @@ class SwapDetailActivity : BaseActivity(), SwapDetailContract.View {
             tvSwapType.text = getString(R.string.nep5_token_erc20_token)
             tvSwapState.text = "init"
             when(swapRecord.state) {
+
                 0 -> {
-                    if (swapRecord.fail) {
-                        tvSwapState.text = getString(R.string.failed)
-                    } else {
-                        tvSwapState.text = getString(R.string.waiting_for_confirm)
-                    }
+                    tvSwapState.text = getString(R.string.pending)
                 }
+
                 1 -> {
-                    tvSwapState.text = getString(R.string.pending)
-                }
-                2 -> {
-                    tvSwapState.text = getString(R.string.pending)
-                }
-                3 -> {
-                    tvSwapState.text = getString(R.string.waiting_for_claim)
-                }
-                4 -> {
-                    if (swapRecord.swaptxHash == null || "".equals(swapRecord.swaptxHash)) {
-                        tvSwapState.text = getString(R.string.waiting_for_claim)
-                    } else {
-                        tvSwapState.text = getString(R.string.pending)
-                        txId2.text = swapRecord.swaptxHash
-                        ivTxid2.setImageResource(R.mipmap.icons_neo_wallet)
-                        ivTxid2.setOnClickListener {
-                            OtcUtils.gotoBlockBrowser(SwapDetailActivity@this, "NEO_CHAIN", swapRecord.swaptxHash)
-                        }
-                    }
-                }
-                5 -> {
-                    tvSwapState.text = getString(R.string.pending)
-                    txId2.text = swapRecord.swaptxHash
-                    ivTxid2.setImageResource(R.mipmap.icons_eth_wallet)
-                    txId2.setOnClickListener {
-                        OtcUtils.gotoBlockBrowser(SwapDetailActivity@this, "ETH_CHAIN", swapRecord.swaptxHash)
-                    }
-                }
-                6 -> {
                     tvSwapState.text = getString(R.string.completed)
                     txId2.text = swapRecord.swaptxHash
                     ivTxid2.setImageResource(R.mipmap.icons_eth_wallet)
                     ivTxid2.setOnClickListener {
                         OtcUtils.gotoBlockBrowser(SwapDetailActivity@this, "ETH_CHAIN", swapRecord.swaptxHash)
-                    }
-                }
-                7 -> {
-                    if (swapRecord.neoTimeout && swapRecord.ethTimeout) {
-                        if (swapRecord.swaptxHash == null || "".equals(swapRecord.swaptxHash)) {
-                            tvSwapState.text = getString(R.string.expired)
-                        } else {
-                            if (!swapRecord.swaptxHash.startsWith("0x")) {
-                                tvSwapState.text = getString(R.string.expired)
-                            } else {
-                                tvSwapState.text = getString(R.string.revoked)
-                                txId2.text = swapRecord.swaptxHash
-                                ivTxid2.setImageResource(R.mipmap.icons_neo_wallet)
-                                ivTxid2.setOnClickListener {
-                                    OtcUtils.gotoBlockBrowser(SwapDetailActivity@this, "NEO_CHAIN", swapRecord.swaptxHash)
-                                }
-                            }
-
-                        }
-                    } else {
-                        tvSwapState.text = getString(R.string.pending)
-                    }
-                }
-                8 -> {
-                    if (swapRecord.neoTimeout && swapRecord.ethTimeout) {
-                        if (swapRecord.swaptxHash == null || "".equals(swapRecord.swaptxHash)) {
-                            tvSwapState.text = getString(R.string.expired)
-                        } else {
-                            if (swapRecord.swaptxHash.startsWith("0x")) {
-                                tvSwapState.text = getString(R.string.expired)
-                            } else {
-                                tvSwapState.text = getString(R.string.revoked)
-                                txId2.text = swapRecord.swaptxHash
-                                ivTxid2.setImageResource(R.mipmap.icons_neo_wallet)
-                                ivTxid2.setOnClickListener {
-                                    OtcUtils.gotoBlockBrowser(SwapDetailActivity@this, "NEO_CHAIN", swapRecord.swaptxHash)
-                                }
-                            }
-
-                        }
-                    } else {
-                        tvSwapState.text = getString(R.string.pending)
-                    }
-                }
-                9 -> {
-                    if (swapRecord.neoTimeout && swapRecord.ethTimeout) {
-                        if (swapRecord.swaptxHash == null || "".equals(swapRecord.swaptxHash)) {
-                            tvSwapState.text = getString(R.string.expired)
-                        } else {
-                            tvSwapState.text = getString(R.string.revoked)
-                            txId2.text = swapRecord.swaptxHash
-                            ivTxid2.setImageResource(R.mipmap.icons_neo_wallet)
-                            ivTxid2.setOnClickListener {
-                                OtcUtils.gotoBlockBrowser(SwapDetailActivity@this, "NEO_CHAIN", swapRecord.swaptxHash)
-                            }
-
-                        }
-                    } else {
-                        tvSwapState.text = getString(R.string.pending)
-                    }
-                }
-                10 -> {
-                    if (swapRecord.neoTimeout && swapRecord.ethTimeout) {
-                        if (swapRecord.swaptxHash == null || "".equals(swapRecord.swaptxHash)) {
-                            tvSwapState.text = getString(R.string.expired)
-                        } else {
-                            tvSwapState.text = getString(R.string.revoked)
-                            txId2.text = swapRecord.swaptxHash
-                            ivTxid2.setImageResource(R.mipmap.icons_neo_wallet)
-                            ivTxid2.setOnClickListener {
-                                OtcUtils.gotoBlockBrowser(SwapDetailActivity@this, "NEO_CHAIN", swapRecord.swaptxHash)
-                            }
-
-                        }
-                    } else {
-                        tvSwapState.text = getString(R.string.pending)
                     }
                 }
             }
@@ -253,22 +139,12 @@ class SwapDetailActivity : BaseActivity(), SwapDetailContract.View {
             }
             tvSwapType.text = getString(R.string.qlc_erc20_token_nep5_token)
             when(swapRecord.state) {
-                -2 -> {
-                    tvSwapState.text = getString(R.string.failed)
-                }
-                -1 -> {
-                    tvSwapState.text = getString(R.string.waiting_for_confirm)
-                }
-                11 -> {
+
+                2 -> {
                     tvSwapState.text = getString(R.string.pending)
                 }
-                12 -> {
-                    tvSwapState.text = getString(R.string.pending)
-                }
-                13 -> {
-                    tvSwapState.text = getString(R.string.claim)
-                }
-                14 -> {
+
+                3 -> {
                     tvSwapState.text = getString(R.string.completed)
                     txId2.text = swapRecord.swaptxHash
                     ivTxid2.setImageResource(R.mipmap.icons_neo_wallet)
@@ -276,114 +152,7 @@ class SwapDetailActivity : BaseActivity(), SwapDetailContract.View {
                         OtcUtils.gotoBlockBrowser(SwapDetailActivity@this, "NEO_CHAIN", swapRecord.swaptxHash)
                     }
                 }
-                15 -> {
-                    tvSwapState.text = getString(R.string.completed)
-                    txId2.text = swapRecord.swaptxHash
-                    ivTxid2.setImageResource(R.mipmap.icons_neo_wallet)
-                    txId2.setOnClickListener {
-                        OtcUtils.gotoBlockBrowser(SwapDetailActivity@this, "NEO_CHAIN", swapRecord.swaptxHash)
-                    }
-                }
-                16 -> {
-                    tvSwapState.text = getString(R.string.completed)
-                    txId2.text = swapRecord.swaptxHash
-                    ivTxid2.setImageResource(R.mipmap.icons_neo_wallet)
-                    txId2.setOnClickListener {
-                        OtcUtils.gotoBlockBrowser(SwapDetailActivity@this, "NEO_CHAIN", swapRecord.swaptxHash)
-                    }
-                }
-                17 -> {
-                    tvSwapState.text = getString(R.string.completed)
-                    txId2.text = swapRecord.swaptxHash
-                    ivTxid2.setImageResource(R.mipmap.icons_neo_wallet)
-                    txId2.setOnClickListener {
-                        OtcUtils.gotoBlockBrowser(SwapDetailActivity@this, "NEO_CHAIN", swapRecord.swaptxHash)
-                    }
-//                    if (swapRecord.ethTimeout) {
-//                        if (swapRecord.swaptxHash == null || "".equals(swapRecord.swaptxHash)) {
-//                            tvSwapState.text = getString(R.string.expired)
-//                        } else {
-//                            tvSwapState.text = getString(R.string.revoked)
-//                            txId2.text = swapRecord.swaptxHash
-//                            ivTxid2.setImageResource(R.mipmap.icons_eth_wallet)
-//                            txId2.setOnClickListener {
-//                                OtcUtils.gotoBlockBrowser(SwapDetailActivity@this, "ETH_CHAIN", swapRecord.swaptxHash)
-//                            }
-//                        }
-//                    } else {
-//                        tvSwapState.text = getString(R.string.pending)
-//                    }
-                }
-                18 -> {
-                    tvSwapState.text = getString(R.string.completed)
-                    txId2.text = swapRecord.swaptxHash
-                    ivTxid2.setImageResource(R.mipmap.icons_neo_wallet)
-                    txId2.setOnClickListener {
-                        OtcUtils.gotoBlockBrowser(SwapDetailActivity@this, "NEO_CHAIN", swapRecord.swaptxHash)
-                    }
-//                    if (swapRecord.ethTimeout) {
-//                        if (swapRecord.swaptxHash == null || "".equals(swapRecord.swaptxHash)) {
-//                            tvSwapState.text = getString(R.string.expired)
-//                        } else {
-//                            tvSwapState.text = getString(R.string.revoked)
-//                            txId2.text = swapRecord.swaptxHash
-//                            ivTxid2.setImageResource(R.mipmap.icons_eth_wallet)
-//                            txId2.setOnClickListener {
-//                                OtcUtils.gotoBlockBrowser(SwapDetailActivity@this, "ETH_CHAIN", swapRecord.swaptxHash)
-//                            }
-//                        }
-//                    } else {
-//                        tvSwapState.text = getString(R.string.pending)
-//                    }
-                }
-                19 -> {
-                    if (swapRecord.ethTimeout && swapRecord.neoTimeout) {
-                        if (swapRecord.swaptxHash == null || "".equals(swapRecord.swaptxHash)) {
-                            tvSwapState.text = getString(R.string.expired)
-                        } else {
-                            tvSwapState.text = getString(R.string.revoked)
-                            txId2.text = swapRecord.swaptxHash
-                            ivTxid2.setImageResource(R.mipmap.icons_eth_wallet)
-                            txId2.setOnClickListener {
-                                OtcUtils.gotoBlockBrowser(SwapDetailActivity@this, "ETH_CHAIN", swapRecord.swaptxHash)
-                            }
-                        }
-                    } else {
-                        tvSwapState.text = getString(R.string.pending)
-                    }
-                }
-                20 -> {
-                    if (swapRecord.ethTimeout && swapRecord.neoTimeout) {
-                        if (swapRecord.swaptxHash == null || "".equals(swapRecord.swaptxHash)) {
-                            tvSwapState.text = getString(R.string.expired)
-                        } else {
-                            tvSwapState.text = getString(R.string.revoked)
-                            txId2.text = swapRecord.swaptxHash
-                            ivTxid2.setImageResource(R.mipmap.icons_eth_wallet)
-                            txId2.setOnClickListener {
-                                OtcUtils.gotoBlockBrowser(SwapDetailActivity@this, "ETH_CHAIN", swapRecord.swaptxHash)
-                            }
-                        }
-                    } else {
-                        tvSwapState.text = getString(R.string.pending)
-                    }
-                }
-                21 -> {
-                    if (swapRecord.ethTimeout && swapRecord.neoTimeout) {
-                        if (swapRecord.swaptxHash == null || "".equals(swapRecord.swaptxHash)) {
-                            tvSwapState.text = getString(R.string.expired)
-                        } else {
-                            tvSwapState.text = getString(R.string.revoked)
-                            txId2.text = swapRecord.swaptxHash
-                            ivTxid2.setImageResource(R.mipmap.icons_eth_wallet)
-                            txId2.setOnClickListener {
-                                OtcUtils.gotoBlockBrowser(SwapDetailActivity@this, "ETH_CHAIN", swapRecord.swaptxHash)
-                            }
-                        }
-                    } else {
-                        tvSwapState.text = getString(R.string.pending)
-                    }
-                }
+
             }
         }
     }

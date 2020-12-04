@@ -75,7 +75,7 @@ class EthSwapRecordFragment : BaseFragment(), EthSwapRecordContract.View {
         val view = inflater.inflate(R.layout.fragment_swap_record, null)
         ButterKnife.bind(this, view)
         val mBundle = arguments
-        currentAddress = mBundle!!.getString("address")
+        currentAddress = mBundle!!.getString("address")!!
         neow3j = Neow3j.build(HttpService(ConstantValue.neoNode))
         saHalf = ScaleAnimation(1f, 0.5f, 1f, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
         saHalf.setDuration(400)
@@ -501,30 +501,30 @@ class EthSwapRecordFragment : BaseFragment(), EthSwapRecordContract.View {
         if (isClose) {
             return
         }
-        val dataJson = jsonObject(
-                "rOrigin" to swapRecord!!.rOrign,
-                "userNep5Addr" to swapRecord!!.toAddress
-        )
-        KLog.i(dataJson.toString())
-        var request = (ConstantValue.qlcHubEndPoint + "/withdraw/claim").httpPost().body(dataJson.toString())
-        DefiUtil.addRequestHeader(request)
-        request.responseString { _, _, result ->
-            val (data, error) = result
-            KLog.i(data)
-            if (error == null) {
-                var fetchBack = Gson().fromJson<FetchBack>(data, FetchBack::class.java)
-                swapRecord!!.swaptxHash = fetchBack.value
-                AppConfig.instance.daoSession.swapRecordDao.update(swapRecord)
-                runOnUiThread {
-                    swapListAdapter.notifyItemChanged(swapRecord!!.index)
-                }
-                Thread.sleep(checkStatusTime)
-                checkLcokState()
-            } else {
-                Thread.sleep(checkStatusTime)
-                nep5unLockNotice()
-            }
-        }
+//        val dataJson = jsonObject(
+//                "rOrigin" to swapRecord!!.rOrign,
+//                "userNep5Addr" to swapRecord!!.toAddress
+//        )
+//        KLog.i(dataJson.toString())
+//        var request = (ConstantValue.qlcHubEndPoint + "/withdraw/claim").httpPost().body(dataJson.toString())
+//        DefiUtil.addRequestHeader(request)
+//        request.responseString { _, _, result ->
+//            val (data, error) = result
+//            KLog.i(data)
+//            if (error == null) {
+//                var fetchBack = Gson().fromJson<FetchBack>(data, FetchBack::class.java)
+//                swapRecord!!.swaptxHash = fetchBack.value
+//                AppConfig.instance.daoSession.swapRecordDao.update(swapRecord)
+//                runOnUiThread {
+//                    swapListAdapter.notifyItemChanged(swapRecord!!.index)
+//                }
+//                Thread.sleep(checkStatusTime)
+//                checkLcokState()
+//            } else {
+//                Thread.sleep(checkStatusTime)
+//                nep5unLockNotice()
+//            }
+//        }
     }
 
     fun getSwapHistory() {
@@ -541,7 +541,7 @@ class EthSwapRecordFragment : BaseFragment(), EthSwapRecordContract.View {
                     }
                 } else {
                     //查找erc20到nep5抵押的状态
-                    if (swapRecord.state != 21 && swapRecord.state != 18) {
+                    if (swapRecord.state == 2) {
                         try {
                             KLog.i("index= " + index)
                             checkLcokState(index, swapRecord)
@@ -556,13 +556,12 @@ class EthSwapRecordFragment : BaseFragment(), EthSwapRecordContract.View {
 
     fun checkLcokState(index: Int, swapRecord: SwapRecord) {
         val dataJson = jsonObject(
-                "type" to swapRecord.type.toString(),
-                "hash" to swapRecord.rHash
+                "hash" to swapRecord.txHash
         )
 
-        var list = arrayListOf<Pair<String, String>>(Pair("value", swapRecord.rHash))
+        var list = arrayListOf<Pair<String, String>>(Pair("hash", swapRecord.txHash))
         KLog.i(dataJson.toString())
-        var request = (ConstantValue.qlcHubEndPoint + "/info/lockerInfo").httpGet(list)
+        var request = (ConstantValue.qlcHubEndPoint + "/info/swapInfoByTxHash").httpGet(list)
         DefiUtil.addRequestHeader(request)
         request.responseString { _, _, result ->
             val (data, error) = result
@@ -570,9 +569,6 @@ class EthSwapRecordFragment : BaseFragment(), EthSwapRecordContract.View {
             if (error == null) {
                 var checkSwapHubState = Gson().fromJson<CheckHubState>(data, CheckHubState::class.java)
                 swapRecord.state = checkSwapHubState.state.toInt()
-                swapRecord.neoTimeout = checkSwapHubState.isNeoTimeout
-                swapRecord.ethTimeout = checkSwapHubState.isEthTimeout
-                swapRecord.fail = checkSwapHubState.isFail
                 AppConfig.instance.daoSession.swapRecordDao.update(swapRecord)
                 runOnUiThread {
                     KLog.i("index= " + index)
@@ -580,21 +576,6 @@ class EthSwapRecordFragment : BaseFragment(), EthSwapRecordContract.View {
                 }
             } else {
                 error.exception.printStackTrace()
-                if ("HTTP Exception 500 Internal Server Error".equals(error.exception.message)) {
-                    swapRecord.state = -1
-                    AppConfig.instance.daoSession.swapRecordDao.update(swapRecord)
-                    runOnUiThread {
-                        KLog.i("index= " + index)
-                        swapListAdapter.notifyItemChanged(index)
-                    }
-                } else {
-                    swapRecord.state = -2
-                    AppConfig.instance.daoSession.swapRecordDao.update(swapRecord)
-                    runOnUiThread {
-                        KLog.i("index= " + index)
-                        swapListAdapter.notifyItemChanged(index)
-                    }
-                }
                 KLog.i(error.exception.message)
             }
         }

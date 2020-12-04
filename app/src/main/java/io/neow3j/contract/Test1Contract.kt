@@ -52,25 +52,21 @@ object Test1Contract {
     }
 
     @JvmStatic
-    fun userLock(neow3j: Neow3j, hash: String, fromAddress: String, privateKey: String, amount: BigInteger, wrapperNeoAddress: String, overTimeBlocks: Int, contractAddress: String): String {
+    fun userLock(neow3j: Neow3j, fromAddress: String, privateKey: String, amount: BigInteger, ethWalletAddress : String, contractAddress: String): String {
         var wallet = io.neow3j.wallet.Account.fromWIF(privateKey).build()
         KLog.i(fromAddress)
         KLog.i(privateKey)
         KLog.i(amount)
-        KLog.i(wrapperNeoAddress)
-        KLog.i(overTimeBlocks)
-        KLog.i(contractAddress)
+        KLog.i(ethWalletAddress)
         try {
             var nep5ScriptHash = ScriptHash(contractAddress)
             val params: MutableList<ContractParameter> = ArrayList()
-            params.add(ContractParameter.byteArray(hash))
             params.add(ContractParameter.byteArrayFromAddress(fromAddress))
             params.add(ContractParameter.integer(amount * 100000000.toBigInteger()))
-            params.add(ContractParameter.byteArrayFromAddress(wrapperNeoAddress))
-            params.add(ContractParameter.integer(overTimeBlocks))
+            params.add(ContractParameter.byteArray(ethWalletAddress))
             var contractInvocation = ContractInvocation.Builder(neow3j)
                     .contractScriptHash(nep5ScriptHash)
-                    .function("userLock")
+                    .function("lock")
                     .parameters(params)
                     .account(wallet)
                     .build()

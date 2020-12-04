@@ -198,7 +198,7 @@ class StakeDetailActivity : BaseActivity(), StakeDetailContract.View {
                     if (System.currentTimeMillis() > myStake.withdrawTime * 1000) {
                         showProgressDialog()
                         thread {
-                                                getNep5Txid(myStake.nep5TxId)
+                            getNep5Txid(myStake.nep5TxId)
 //                            getNeoAddressPubKey("AXa39WUxN6rXjRMt36Zs88XZi5hZHcF8GK")
                         }
                     }
@@ -207,19 +207,19 @@ class StakeDetailActivity : BaseActivity(), StakeDetailContract.View {
                     if (System.currentTimeMillis() > myStake.withdrawTime * 1000) {
                         showProgressDialog()
                         thread {
-                                                getNep5Txid(myStake.nep5TxId)
+                            getNep5Txid(myStake.nep5TxId)
 //                            getNeoAddressPubKey("AXa39WUxN6rXjRMt36Zs88XZi5hZHcF8GK")
                         }
                     }
                 }
                 "WithdrawProcess" -> {
-//                    if (System.currentTimeMillis() > myStake.withdrawTime * 1000) {
-//                        showProgressDialog()
-//                        thread {
-//                            //                    getNep5Txid(myStake.nep5TxId)
+                    if (System.currentTimeMillis() > myStake.withdrawTime * 1000) {
+                        showProgressDialog()
+                        thread {
+                            getNep5Txid(myStake.nep5TxId)
 //                            getNeoAddressPubKey("AXa39WUxN6rXjRMt36Zs88XZi5hZHcF8GK")
-//                        }
-//                    }
+                        }
+                    }
                 }
                 "WithdrawDone" -> {
                 }
@@ -285,7 +285,6 @@ class StakeDetailActivity : BaseActivity(), StakeDetailContract.View {
 
         }
     }
-
 
 
     fun getNep5TxidWithDraw(string: String) {
@@ -372,7 +371,7 @@ class StakeDetailActivity : BaseActivity(), StakeDetailContract.View {
                         }
                         stateBlock.setSignature(Helper.byteToHexString(signature))
                         processAsyncWithdraw(stateBlock, unLock)
-                    } catch (e : java.lang.Exception) {
+                    } catch (e: java.lang.Exception) {
                         e.printStackTrace()
                     }
                 } else {
@@ -387,7 +386,7 @@ class StakeDetailActivity : BaseActivity(), StakeDetailContract.View {
                     benefitWithdraw(unLock)
                 }
             }
-        } catch (e :Exception) {
+        } catch (e: Exception) {
             toast(getString(R.string.revoke_failed))
             e.printStackTrace()
             closeProgressDialog()
@@ -455,10 +454,10 @@ class StakeDetailActivity : BaseActivity(), StakeDetailContract.View {
                     lockResult.stakeType.toAddress = lockInfo.result.multiSigAddress
                     lockResult.stakeType.qlcchainAddress = lockInfo.result.qlcAddress
                     lockResult.txid = myStake.nep5TxId
-                    var oneDay = 60*60*24
+                    var oneDay = 60 * 60 * 24
                     var lockDays = (lockInfo.result.unLockTimestamp - lockInfo.result.lockTimestamp) / oneDay
 
-                    lockResult.stakeType.stakeQLcAmount = lockInfo.result.amount.toBigDecimal().divide(10.toBigDecimal().pow(8), 8,  BigDecimal.ROUND_HALF_UP).stripTrailingZeros().toPlainString()
+                    lockResult.stakeType.stakeQLcAmount = lockInfo.result.amount.toBigDecimal().divide(10.toBigDecimal().pow(8), 8, BigDecimal.ROUND_HALF_UP).stripTrailingZeros().toPlainString()
                     var neoList = AppConfig.instance.daoSession.walletDao.loadAll()
                     neoList.forEach {
                         if (it.address.equals(lockResult.stakeType.fromNeoAddress)) {
@@ -503,7 +502,7 @@ class StakeDetailActivity : BaseActivity(), StakeDetailContract.View {
                         toast(getString(R.string.txid_is_unlock))
                     }
                 }
-            } catch (e : Exception) {
+            } catch (e: Exception) {
                 e.printStackTrace()
                 runOnUiThread {
                     closeProgressDialog()
@@ -512,6 +511,7 @@ class StakeDetailActivity : BaseActivity(), StakeDetailContract.View {
             }
         }
     }
+
     //这个只是用来显示抵押的neo钱包地址
     fun getLockInfo1() {
         thread {
@@ -535,7 +535,7 @@ class StakeDetailActivity : BaseActivity(), StakeDetailContract.View {
                         toast(getString(R.string.txid_is_unlock))
                     }
                 }
-            } catch (e : Exception) {
+            } catch (e: Exception) {
                 e.printStackTrace()
                 runOnUiThread {
                     closeProgressDialog()
@@ -572,7 +572,7 @@ class StakeDetailActivity : BaseActivity(), StakeDetailContract.View {
         benefitPledgeCheck(result.getString("result"))
     }
 
-    fun benefitPledgeCheck(checkId : String) {
+    fun benefitPledgeCheck(checkId: String) {
         if (isFinish) {
             return
         }
@@ -642,12 +642,12 @@ class StakeDetailActivity : BaseActivity(), StakeDetailContract.View {
             val result = client.call("ledger_processAsync", params)
             KLog.i(result)
             processCheckWithdraw(unLock, result.getString("result"))
-        } catch (e : Exception) {
+        } catch (e: Exception) {
             e.printStackTrace()
         }
     }
 
-    fun processCheckWithdraw(unLock: UnLock, checkId : String) {
+    fun processCheckWithdraw(unLock: UnLock, checkId: String) {
         if (isFinish) {
             return
         }
@@ -679,7 +679,7 @@ class StakeDetailActivity : BaseActivity(), StakeDetailContract.View {
                 checkCount = 0
                 getNep5TxidWithDraw(unLock.data.result.unlockTxId)
             }
-        } catch (e : Exception) {
+        } catch (e: Exception) {
             e.printStackTrace()
         }
     }
@@ -694,6 +694,7 @@ class StakeDetailActivity : BaseActivity(), StakeDetailContract.View {
         KLog.i(result)
         processCheck(stateBlock, result.getString("result"))
     }
+
     fun processCheck(stateBlock: StateBlock, checkId: String) {
         if (isFinish) {
             return

@@ -188,7 +188,7 @@ public class DefiJson {
              */
 
             private double relative_1d;
-            private int value;
+            private double value;
 
             public double getRelative_1d() {
                 return relative_1d;
@@ -198,11 +198,11 @@ public class DefiJson {
                 this.relative_1d = relative_1d;
             }
 
-            public int getValue() {
+            public double getValue() {
                 return value;
             }
 
-            public void setValue(int value) {
+            public void setValue(double value) {
                 this.value = value;
             }
         }
@@ -302,7 +302,7 @@ public class DefiJson {
              */
 
             private double relative_1d;
-            private int value;
+            private double value;
 
             public double getRelative_1d() {
                 return relative_1d;
@@ -312,11 +312,11 @@ public class DefiJson {
                 this.relative_1d = relative_1d;
             }
 
-            public int getValue() {
+            public double getValue() {
                 return value;
             }
 
-            public void setValue(int value) {
+            public void setValue(double value) {
                 this.value = value;
             }
         }

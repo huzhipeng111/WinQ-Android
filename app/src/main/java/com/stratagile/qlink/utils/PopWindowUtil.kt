@@ -108,14 +108,6 @@ object PopWindowUtil {
             onItemSelectListener.onSelect(arrayList[position])
             builder.create().dismiss()
         }
-//        CustomPopWindow.PopupWindowBuilder(activity)
-//                .setView(maskView)
-//                .setClippingEnable(false)
-//                .setContenView(contentView)
-//                .setFocusable(false)
-//                .size(UIUtils.getDisplayWidth(activity), UIUtils.getDisplayHeigh(activity))
-//                .create()
-//                .showAtLocation(showView, Gravity.NO_GRAVITY, 0, 0)
 
         bt_cancal.setOnClickListener {
             builder.create().dismiss()

@@ -62,6 +62,7 @@ class DefiActiveDataFragment : BaseFragment(), DefiActiveDataContract.View {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         viewModel = ViewModelProviders.of(activity!!).get(DefiViewModel::class.java)
+        KLog.i("DefiActiveDataFragment onViewCreated")
         viewModel.defiDetailLiveData.observe(this, Observer {
             mDefiDetail = it!!
         })

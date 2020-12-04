@@ -57,7 +57,9 @@ class DefiHistoricalStateFragment : BaseFragment(), DefiHistoricalStateContract.
         recyclerView.adapter = defiTokenHistoryListAdapter
         defiTokenHistoryListAdapter.setEnableLoadMore(true)
         defiTokenHistoryListAdapter.setOnLoadMoreListener({getDefiStateList()}, recyclerView)
-        refreshLayout.setOnRefreshListener { initDataFromNet() }
+        refreshLayout.setOnRefreshListener {
+            initDataFromNet()
+        }
     }
 
     override fun initDataFromNet() {

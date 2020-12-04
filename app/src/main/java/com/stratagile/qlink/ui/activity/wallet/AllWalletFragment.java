@@ -560,7 +560,7 @@ public class AllWalletFragment extends BaseFragment implements AllWalletContract
                             @Override
                             public void run() {
                                 llNeoQlcTransfer.setVisibility(View.GONE);
-//                                llEthQlcTransfer.setVisibility(View.VISIBLE);
+                                llEthQlcTransfer.setVisibility(View.VISIBLE);
                                 tvPending.setText("");
                             }
                         });
@@ -578,7 +578,7 @@ public class AllWalletFragment extends BaseFragment implements AllWalletContract
                             getActivity().runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-//                                    llNeoQlcTransfer.setVisibility(View.VISIBLE);
+                                    llNeoQlcTransfer.setVisibility(View.VISIBLE);
                                     llEthQlcTransfer.setVisibility(View.GONE);
                                     tvPending.setText("");
                                 }
